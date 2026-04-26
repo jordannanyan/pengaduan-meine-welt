@@ -36,25 +36,26 @@ require_once __DIR__ . '/../includes/header_public.php';
 
                     <hr>
 
+                    <div id="identitasBox">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Nama <span class="text-danger" id="namaRequiredMark">*</span></label>
+                                <input type="text" name="reporter_name" id="reporterName" class="form-control" maxlength="100" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Kontak (Email/No. HP)</label>
+                                <input type="text" name="reporter_contact" id="reporterContact" class="form-control" maxlength="100"
+                                       placeholder="Opsional, supaya petugas bisa menghubungi">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="anonimToggle" name="is_anonymous" value="1" checked>
+                        <input class="form-check-input" type="checkbox" id="anonimToggle" name="is_anonymous" value="1">
                         <label class="form-check-label fw-semibold" for="anonimToggle">
                             Laporkan secara anonim
                         </label>
-                        <div class="form-text">Aktifkan untuk tidak menyertakan identitas.</div>
-                    </div>
-
-                    <div id="identitasBox" style="display:none">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nama</label>
-                                <input type="text" name="reporter_name" class="form-control" maxlength="100">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Kontak (Email/No. HP)</label>
-                                <input type="text" name="reporter_contact" class="form-control" maxlength="100">
-                            </div>
-                        </div>
+                        <div class="form-text">Aktifkan jika tidak ingin mencantumkan nama dan kontak.</div>
                     </div>
 
                     <div class="d-grid mt-4">
@@ -94,9 +95,29 @@ require_once __DIR__ . '/../includes/header_public.php';
 </div>
 
 <script>
-document.getElementById('anonimToggle').addEventListener('change', function() {
-    document.getElementById('identitasBox').style.display = this.checked ? 'none' : 'block';
-});
+(function() {
+    const toggle  = document.getElementById('anonimToggle');
+    const box     = document.getElementById('identitasBox');
+    const nama    = document.getElementById('reporterName');
+    const kontak  = document.getElementById('reporterContact');
+    const mark    = document.getElementById('namaRequiredMark');
+
+    function sync() {
+        const anon = toggle.checked;
+        box.style.display = anon ? 'none' : 'block';
+        if (anon) {
+            nama.required = false;
+            nama.value = '';
+            kontak.value = '';
+            if (mark) mark.style.display = 'none';
+        } else {
+            nama.required = true;
+            if (mark) mark.style.display = '';
+        }
+    }
+    toggle.addEventListener('change', sync);
+    sync();
+})();
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

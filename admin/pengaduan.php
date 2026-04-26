@@ -3,9 +3,10 @@ $page_title = 'Kelola Pengaduan';
 require_once __DIR__ . '/../includes/header_admin.php';
 
 // ---------- Filter ----------
-$status   = $_GET['status']   ?? '';
-$kategori = $_GET['kategori'] ?? '';
-$q        = trim($_GET['q'] ?? '');
+$status    = $_GET['status']    ?? '';
+$kategori  = $_GET['kategori']  ?? '';
+$sentimen  = $_GET['sentimen']  ?? '';
+$q         = trim($_GET['q'] ?? '');
 
 $where = [];
 $params = [];
@@ -17,6 +18,10 @@ if ($status !== '' && in_array($status, ['new','in_progress','resolved','cancell
 if ($kategori !== '' && in_array($kategori, ['PLY','PRD','HRG','SUI'])) {
     $where[] = 'FIND_IN_SET(?, c.final_category_code) > 0';
     $params[] = $kategori;
+}
+if ($sentimen !== '' && in_array($sentimen, ['positif','negatif','netral'])) {
+    $where[] = 'c.sentiment = ?';
+    $params[] = $sentimen;
 }
 if ($q !== '') {
     $where[] = '(c.ticket_code LIKE ? OR c.complaint_text LIKE ? OR c.reporter_name LIKE ?)';
@@ -51,11 +56,11 @@ $rows = $stmt->fetchAll();
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
         <form method="GET" class="row g-2">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <input type="text" name="q" class="form-control" placeholder="Cari kode / teks / nama..."
                        value="<?= h($q) ?>">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select name="status" class="form-select">
                     <option value="">-- Semua Status --</option>
                     <option value="new"         <?= $status==='new'?'selected':'' ?>>Baru</option>
@@ -64,13 +69,21 @@ $rows = $stmt->fetchAll();
                     <option value="cancelled"   <?= $status==='cancelled'?'selected':'' ?>>Dibatalkan</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select name="kategori" class="form-select">
                     <option value="">-- Semua Kategori --</option>
                     <option value="PLY" <?= $kategori==='PLY'?'selected':'' ?>>Pelayanan</option>
                     <option value="PRD" <?= $kategori==='PRD'?'selected':'' ?>>Produk</option>
                     <option value="HRG" <?= $kategori==='HRG'?'selected':'' ?>>Harga</option>
                     <option value="SUI" <?= $kategori==='SUI'?'selected':'' ?>>Suasana</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="sentimen" class="form-select">
+                    <option value="">-- Semua Sentimen --</option>
+                    <option value="positif" <?= $sentimen==='positif'?'selected':'' ?>>Positif</option>
+                    <option value="negatif" <?= $sentimen==='negatif'?'selected':'' ?>>Negatif</option>
+                    <option value="netral"  <?= $sentimen==='netral'?'selected':'' ?>>Netral</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -98,6 +111,7 @@ $rows = $stmt->fetchAll();
                         <th>Pelapor</th>
                         <th>Ringkasan</th>
                         <th>Kategori</th>
+                        <th>Sentimen</th>
                         <th>Conf.</th>
                         <th>Status</th>
                         <th></th>
@@ -105,7 +119,7 @@ $rows = $stmt->fetchAll();
                 </thead>
                 <tbody>
                 <?php if (!$rows): ?>
-                    <tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data.</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data.</td></tr>
                 <?php else: foreach ($rows as $r): ?>
                     <tr>
                         <td class="font-monospace small"><?= h($r['ticket_code']) ?></td>
@@ -121,6 +135,7 @@ $rows = $stmt->fetchAll();
                             <?= h(mb_strimwidth($r['complaint_text'], 0, 80, '...')) ?>
                         </td>
                         <td><?= kategori_badge($r['final_category_code']) ?></td>
+                        <td><?= sentimen_badge($r['sentiment'] ?? null) ?></td>
                         <td class="small">
                             <?php if ($r['predicted_confidence']): ?>
                                 <?= number_format($r['predicted_confidence'] * 100, 1) ?>%

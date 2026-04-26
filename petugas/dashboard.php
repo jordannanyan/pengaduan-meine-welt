@@ -16,14 +16,14 @@ $my_followups = (int)$stmt->fetchColumn();
 
 // Pengaduan baru (belum ditangani)
 $baru = $pdo->query(
-    "SELECT ticket_code, submitted_at, final_category_code, complaint_text
+    "SELECT ticket_code, submitted_at, final_category_code, sentiment, complaint_text
      FROM complaints WHERE status='new'
      ORDER BY submitted_at ASC LIMIT 10"
 )->fetchAll();
 
 // Pengaduan sedang diproses
 $proses = $pdo->query(
-    "SELECT ticket_code, submitted_at, final_category_code, complaint_text
+    "SELECT ticket_code, submitted_at, final_category_code, sentiment, complaint_text
      FROM complaints WHERE status='in_progress'
      ORDER BY submitted_at ASC LIMIT 10"
 )->fetchAll();
@@ -113,7 +113,10 @@ $proses = $pdo->query(
                             <div class="small text-muted"><?= tgl_id($b['submitted_at']) ?></div>
                         </div>
                         <div class="small"><?= h(mb_strimwidth($b['complaint_text'], 0, 90, '...')) ?></div>
-                        <div><?= kategori_badge($b['final_category_code']) ?></div>
+                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                            <?= kategori_badge($b['final_category_code']) ?>
+                            <?= sentimen_badge($b['sentiment'] ?? null) ?>
+                        </div>
                     </a>
                 <?php endforeach; endif; ?>
             </div>
@@ -139,7 +142,10 @@ $proses = $pdo->query(
                             <div class="small text-muted"><?= tgl_id($b['submitted_at']) ?></div>
                         </div>
                         <div class="small"><?= h(mb_strimwidth($b['complaint_text'], 0, 90, '...')) ?></div>
-                        <div><?= kategori_badge($b['final_category_code']) ?></div>
+                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                            <?= kategori_badge($b['final_category_code']) ?>
+                            <?= sentimen_badge($b['sentiment'] ?? null) ?>
+                        </div>
                     </a>
                 <?php endforeach; endif; ?>
             </div>

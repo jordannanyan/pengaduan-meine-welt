@@ -59,6 +59,12 @@ $classification = $data['classification'] ?? [];
                             <b><?= number_format(($classification['primary_confidence'] ?? 0) * 100, 1) ?>%</b>
                             (kategori <?= h(kategori_label($classification['primary_code'] ?? '')) ?>)
                         </div>
+
+                        <?php if (!empty($classification['sentimen'])): ?>
+                            <hr class="my-3">
+                            <div class="small text-muted mb-1">Sentimen terdeteksi:</div>
+                            <?= sentimen_badge($classification['sentimen'], $classification['sentimen_confidence'] ?? null) ?>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-warning text-start small">

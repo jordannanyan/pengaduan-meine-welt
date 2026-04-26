@@ -28,9 +28,23 @@ foreach ($cat_rows as $r) {
     }
 }
 
+// ---------- Distribusi sentimen ----------
+$sent_rows = $pdo->query(
+    "SELECT sentiment, COUNT(*) AS jml
+     FROM complaints
+     WHERE sentiment IS NOT NULL AND sentiment <> ''
+     GROUP BY sentiment"
+)->fetchAll();
+
+$sent_count = ['positif'=>0, 'negatif'=>0, 'netral'=>0];
+foreach ($sent_rows as $r) {
+    $key = strtolower((string)$r['sentiment']);
+    if (isset($sent_count[$key])) $sent_count[$key] = (int)$r['jml'];
+}
+
 // ---------- 10 pengaduan terbaru ----------
 $recent = $pdo->query(
-    'SELECT ticket_code, submitted_at, status, final_category_code, complaint_text
+    'SELECT ticket_code, submitted_at, status, final_category_code, sentiment, complaint_text
      FROM complaints
      ORDER BY submitted_at DESC LIMIT 10'
 )->fetchAll();
@@ -136,12 +150,32 @@ $recent = $pdo->query(
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h6 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary"></i> Info Sistem</h6>
+                <h6 class="fw-bold mb-3"><i class="bi bi-emoji-smile-fill text-primary"></i> Distribusi Sentimen</h6>
+                <?php
+                $total_sent = array_sum($sent_count);
+                $sent_color = ['positif'=>'success','negatif'=>'danger','netral'=>'secondary'];
+                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill','netral'=>'bi-emoji-neutral-fill'];
+                foreach ($sent_count as $key => $cnt):
+                    $pct = $total_sent > 0 ? round($cnt / $total_sent * 100, 1) : 0;
+                ?>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small">
+                            <span><i class="bi <?= $sent_icon[$key] ?> text-<?= $sent_color[$key] ?>"></i> <?= ucfirst($key) ?></span>
+                            <span><b><?= $cnt ?></b> (<?= $pct ?>%)</span>
+                        </div>
+                        <div class="progress" style="height:8px">
+                            <div class="progress-bar bg-<?= $sent_color[$key] ?>" style="width:<?= $pct ?>%"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                <?php if ($total_sent === 0): ?>
+                    <p class="text-muted small mb-0">Belum ada data sentimen.</p>
+                <?php endif; ?>
+
+                <hr class="my-3">
                 <ul class="list-unstyled small mb-0">
-                    <li class="mb-2"><i class="bi bi-person-check text-success"></i> User aktif: <b><?= $total_users ?></b></li>
-                    <li class="mb-2"><i class="bi bi-tags text-info"></i> Kategori: <b>4 aspek</b></li>
-                    <li class="mb-2"><i class="bi bi-cpu text-primary"></i> Model: <b>Naive Bayes</b></li>
-                    <li><i class="bi bi-shield-check text-warning"></i> Role anda: <b>Administrator</b></li>
+                    <li class="mb-1"><i class="bi bi-person-check text-success"></i> User aktif: <b><?= $total_users ?></b></li>
+                    <li><i class="bi bi-shield-check text-warning"></i> Role: <b>Administrator</b></li>
                 </ul>
             </div>
         </div>
@@ -169,6 +203,7 @@ $recent = $pdo->query(
                             <th>Waktu</th>
                             <th>Ringkasan</th>
                             <th>Kategori</th>
+                            <th>Sentimen</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
@@ -180,6 +215,7 @@ $recent = $pdo->query(
                                 <td class="small"><?= tgl_id($r['submitted_at']) ?></td>
                                 <td class="small"><?= h(mb_strimwidth($r['complaint_text'], 0, 70, '...')) ?></td>
                                 <td><?= kategori_badge($r['final_category_code']) ?></td>
+                                <td><?= sentimen_badge($r['sentiment'] ?? null) ?></td>
                                 <td><?= status_badge($r['status']) ?></td>
                                 <td>
                                     <a href="<?= BASE_URL ?>/admin/pengaduan_detail.php?code=<?= urlencode($r['ticket_code']) ?>"

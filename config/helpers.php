@@ -136,6 +136,42 @@ function status_badge(string $status): string
 }
 
 /**
+ * Label sentimen Indonesia
+ */
+function sentimen_label(?string $code): string
+{
+    if (!$code) return '-';
+    $map = [
+        'positif' => 'Positif',
+        'negatif' => 'Negatif',
+        'netral'  => 'Netral',
+        'POS'     => 'Positif',
+        'NEG'     => 'Negatif',
+        'NET'     => 'Netral',
+    ];
+    return $map[$code] ?? ucfirst($code);
+}
+
+/**
+ * Badge Bootstrap untuk sentimen
+ */
+function sentimen_badge(?string $code, ?float $confidence = null): string
+{
+    if (!$code) return '<span class="text-muted">-</span>';
+    $key = strtolower($code);
+    $map = [
+        'positif' => ['bg-success', 'bi-emoji-smile-fill', 'Positif'],
+        'negatif' => ['bg-danger',  'bi-emoji-frown-fill', 'Negatif'],
+        'netral'  => ['bg-secondary','bi-emoji-neutral-fill', 'Netral'],
+    ];
+    $data = $map[$key] ?? ['bg-light text-dark', 'bi-emoji-expressionless', ucfirst($code)];
+    $conf = $confidence !== null
+        ? ' <span class="opacity-75">(' . number_format($confidence * 100, 1) . '%)</span>'
+        : '';
+    return '<span class="badge ' . $data[0] . '"><i class="bi ' . $data[1] . '"></i> ' . h($data[2]) . $conf . '</span>';
+}
+
+/**
  * Badge Bootstrap untuk kategori
  */
 function kategori_badge(?string $codes): string

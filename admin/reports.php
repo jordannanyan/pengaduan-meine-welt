@@ -49,6 +49,44 @@ $stmt = $pdo->prepare(
 $stmt->execute($params);
 $harian = $stmt->fetchAll();
 
+// ---------- Distribusi sentimen ----------
+$stmt = $pdo->prepare(
+    "SELECT sentiment, COUNT(*) AS jml FROM complaints
+     WHERE submitted_at BETWEEN ? AND ?
+       AND sentiment IS NOT NULL AND sentiment <> ''
+     GROUP BY sentiment"
+);
+$stmt->execute($params);
+$sent_count = ['positif'=>0,'negatif'=>0,'netral'=>0];
+foreach ($stmt->fetchAll() as $r) {
+    $key = strtolower((string)$r['sentiment']);
+    if (isset($sent_count[$key])) $sent_count[$key] = (int)$r['jml'];
+}
+
+// ---------- Sentimen per kategori (cross-tab) ----------
+$stmt = $pdo->prepare(
+    "SELECT final_category_code, sentiment FROM complaints
+     WHERE submitted_at BETWEEN ? AND ?
+       AND final_category_code IS NOT NULL AND final_category_code <> ''
+       AND sentiment IS NOT NULL AND sentiment <> ''"
+);
+$stmt->execute($params);
+$cat_sent = [
+    'PLY' => ['positif'=>0,'negatif'=>0,'netral'=>0],
+    'PRD' => ['positif'=>0,'negatif'=>0,'netral'=>0],
+    'HRG' => ['positif'=>0,'negatif'=>0,'netral'=>0],
+    'SUI' => ['positif'=>0,'negatif'=>0,'netral'=>0],
+];
+foreach ($stmt->fetchAll() as $r) {
+    $sent_key = strtolower((string)$r['sentiment']);
+    foreach (explode(',', $r['final_category_code']) as $c) {
+        $c = trim($c);
+        if (isset($cat_sent[$c]) && isset($cat_sent[$c][$sent_key])) {
+            $cat_sent[$c][$sent_key]++;
+        }
+    }
+}
+
 // ---------- Akurasi override ----------
 $stmt = $pdo->prepare(
     "SELECT
@@ -192,6 +230,69 @@ $match_pct = $akurasi['total'] > 0
                         </div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribusi Sentimen -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="bi bi-emoji-smile-fill text-primary"></i> Distribusi Sentimen</h6>
+                <?php
+                $total_sent = array_sum($sent_count);
+                $sent_color = ['positif'=>'success','negatif'=>'danger','netral'=>'secondary'];
+                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill','netral'=>'bi-emoji-neutral-fill'];
+                foreach ($sent_count as $key => $cnt):
+                    $pct = $total_sent > 0 ? round($cnt / $total_sent * 100, 1) : 0;
+                ?>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small">
+                            <span><i class="bi <?= $sent_icon[$key] ?> text-<?= $sent_color[$key] ?>"></i> <?= ucfirst($key) ?></span>
+                            <span><b><?= $cnt ?></b> (<?= $pct ?>%)</span>
+                        </div>
+                        <div class="progress mt-1" style="height:10px">
+                            <div class="progress-bar bg-<?= $sent_color[$key] ?>" style="width:<?= $pct ?>%"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                <?php if ($total_sent === 0): ?>
+                    <p class="text-muted small">Belum ada data sentimen pada rentang ini.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sentimen per kategori -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill text-primary"></i> Sentimen per Kategori</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kategori</th>
+                                <th class="text-success text-center"><i class="bi bi-emoji-smile-fill"></i> Positif</th>
+                                <th class="text-danger text-center"><i class="bi bi-emoji-frown-fill"></i> Negatif</th>
+                                <th class="text-secondary text-center"><i class="bi bi-emoji-neutral-fill"></i> Netral</th>
+                                <th class="text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($cat_sent as $code => $row):
+                            $tot = array_sum($row); ?>
+                            <tr>
+                                <td><?= kategori_badge($code) ?></td>
+                                <td class="text-center"><?= $row['positif'] ?></td>
+                                <td class="text-center"><?= $row['negatif'] ?></td>
+                                <td class="text-center"><?= $row['netral'] ?></td>
+                                <td class="text-center"><b><?= $tot ?></b></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

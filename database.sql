@@ -60,6 +60,8 @@ CREATE TABLE complaints (
   -- Mendukung multi-label: 'PRD', 'PRD,HRG', dll
   predicted_category_code VARCHAR(50),
   predicted_confidence DECIMAL(5,4),
+  sentiment VARCHAR(10),
+  sentiment_confidence DECIMAL(5,4),
   final_category_code VARCHAR(50),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

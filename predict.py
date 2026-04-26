@@ -44,6 +44,15 @@ def main():
         vectorizer = joblib.load(os.path.join(base_dir, 'tfidf_vectorizer.pkl'))
         mlb = joblib.load(os.path.join(base_dir, 'mlb_transformer.pkl'))
 
+        # Model sentimen (opsional - kalau file tidak ada, sentimen di-skip)
+        sentiment_model = None
+        sent_path = os.path.join(base_dir, 'model_sentimen.pkl')
+        if os.path.exists(sent_path):
+            try:
+                sentiment_model = joblib.load(sent_path)
+            except Exception:
+                sentiment_model = None
+
         stemmer = StemmerFactory().create_stemmer()
 
         # ================================================================
@@ -227,6 +236,40 @@ def main():
             'confidence': confidence_dict,
             'segmen_count': len(segmen)
         }
+
+        # ================================================================
+        # PREDIKSI SENTIMEN (negatif / positif) — pakai vectorizer yang sama
+        # Klasifikasi terhadap teks utuh yang sudah di-preprocess (gabungan
+        # semua segmen) supaya konteks kalimat tidak hilang.
+        # ================================================================
+        if sentiment_model is not None:
+            try:
+                full_clean = preprocess_text(teks)
+                X_full = vectorizer.transform([full_clean])
+                sent_proba = sentiment_model.predict_proba(X_full)[0]
+                sent_classes = list(sentiment_model.classes_)
+
+                # Map kelas numerik -> label string. Konvensi umum: 0=negatif, 1=positif
+                label_map = {0: 'negatif', 1: 'positif', '0': 'negatif', '1': 'positif',
+                             'negative': 'negatif', 'positive': 'positif',
+                             'neg': 'negatif', 'pos': 'positif'}
+
+                conf_per_label = {}
+                for cls, p in zip(sent_classes, sent_proba):
+                    lbl = label_map.get(cls, str(cls))
+                    conf_per_label[lbl] = round(float(p), 4)
+
+                best_idx = int(sent_proba.argmax())
+                best_cls = sent_classes[best_idx]
+                sent_label = label_map.get(best_cls, str(best_cls))
+                sent_code_map = {'negatif': 'NEG', 'positif': 'POS'}
+
+                result['sentimen'] = sent_label
+                result['sentimen_kode'] = sent_code_map.get(sent_label, sent_label.upper()[:3])
+                result['sentimen_confidence'] = round(float(sent_proba[best_idx]), 4)
+                result['sentimen_distribusi'] = conf_per_label
+            except Exception as e:
+                result['sentimen_error'] = str(e)
 
         print(json.dumps(result, ensure_ascii=False))
 

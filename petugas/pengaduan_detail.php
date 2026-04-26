@@ -155,6 +155,13 @@ $attachments = $stmt->fetchAll();
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <div class="text-muted small">Sentimen:</div>
+                        <?= sentimen_badge($complaint['sentiment'] ?? null, isset($complaint['sentiment_confidence']) ? (float)$complaint['sentiment_confidence'] : null) ?>
+                    </div>
+                </div>
+
                 <?php if ($attachments): ?>
                     <hr>
                     <div class="text-muted small mb-1">Lampiran:</div>

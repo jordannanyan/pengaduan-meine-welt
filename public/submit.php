@@ -32,6 +32,10 @@ if (strlen($complaint_text) > 2000) {
     flash_set('submit', 'Deskripsi pengaduan terlalu panjang (maksimal 2000 karakter).', 'danger');
     redirect(BASE_URL . '/public/index.php');
 }
+if (!$is_anonymous && $reporter_name === '') {
+    flash_set('submit', 'Nama wajib diisi. Centang "Laporkan secara anonim" jika tidak ingin mencantumkan identitas.', 'danger');
+    redirect(BASE_URL . '/public/index.php');
+}
 
 // ----------------------------------------------------------------
 // 2. Simpan pengaduan awal
@@ -122,17 +126,23 @@ try {
     if (!empty($classification['success'])) {
         $predicted_codes      = $classification['kode_string'] ?? null;
         $predicted_confidence = $classification['primary_confidence'] ?? null;
+        $sentiment            = $classification['sentimen'] ?? null;
+        $sentiment_confidence = $classification['sentimen_confidence'] ?? null;
 
         $stmt = $pdo->prepare(
             'UPDATE complaints
              SET predicted_category_code = ?,
                  predicted_confidence    = ?,
+                 sentiment               = ?,
+                 sentiment_confidence    = ?,
                  final_category_code     = ?
              WHERE id = ?'
         );
         $stmt->execute([
             $predicted_codes,
             $predicted_confidence,
+            $sentiment,
+            $sentiment_confidence,
             $predicted_codes,  // default: final = predicted (bisa di-override petugas/admin)
             $complaint_id
         ]);

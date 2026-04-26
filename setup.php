@@ -99,10 +99,22 @@ if ($py_ok) {
         <div class="card-header <?= $pred_ok ? 'bg-success' : 'bg-warning text-dark' ?> text-white">3. Tes Prediksi Model</div>
         <div class="card-body">
             <p>Teks uji: <i>"Kopi disini enak banget dan harganya murah"</i></p>
+            <?php if ($pred_ok): ?>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Kategori:</div>
+                        <?= kategori_badge($test_result['kode_string'] ?? null) ?>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Sentimen:</div>
+                        <?= sentimen_badge($test_result['sentimen'] ?? null, $test_result['sentimen_confidence'] ?? null) ?>
+                    </div>
+                </div>
+            <?php endif; ?>
             <pre class="bg-light p-2" style="max-height:300px;overflow:auto"><?= h($pred_output) ?></pre>
             <?php if (!$pred_ok): ?>
                 <div class="alert alert-warning mb-0">
-                    Prediksi gagal. Pastikan file <code>model_nb_binary_relevance.pkl</code>, <code>tfidf_vectorizer.pkl</code>, dan <code>mlb_transformer.pkl</code> sudah di-copy ke folder ini.
+                    Prediksi gagal. Pastikan file <code>model_nb_binary_relevance.pkl</code>, <code>tfidf_vectorizer.pkl</code>, <code>mlb_transformer.pkl</code>, dan <code>model_sentimen.pkl</code> sudah di-copy ke folder ini.
                     Juga pastikan package <code>joblib</code>, <code>scikit-learn</code>, dan <code>Sastrawi</code> sudah terinstall di Python.
                 </div>
             <?php endif; ?>

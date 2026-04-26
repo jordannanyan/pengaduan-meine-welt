@@ -114,6 +114,13 @@ if ($code !== '') {
                         <?php endif; ?>
                     </div>
 
+                    <?php if (!empty($complaint['sentiment'])): ?>
+                        <div class="mb-3">
+                            <div class="text-muted small">Sentimen pengaduan:</div>
+                            <?= sentimen_badge($complaint['sentiment'], isset($complaint['sentiment_confidence']) ? (float)$complaint['sentiment_confidence'] : null) ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if ($attachments): ?>
                         <div class="mb-3">
                             <div class="text-muted small mb-1">Lampiran:</div>
