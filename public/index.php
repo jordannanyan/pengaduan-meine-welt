@@ -20,6 +20,27 @@ require_once __DIR__ . '/../includes/header_public.php';
                 <form action="submit.php" method="POST" enctype="multipart/form-data" id="formPengaduan">
 
                     <div class="mb-3">
+                        <label class="form-label fw-semibold">Tipe Pesanan <span class="text-danger">*</span></label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="radio" class="btn-check" name="order_type" id="ot_dine_in" value="dine_in" checked required>
+                            <label class="btn btn-outline-primary" for="ot_dine_in">
+                                <i class="bi bi-shop"></i> Dine In
+                            </label>
+
+                            <input type="radio" class="btn-check" name="order_type" id="ot_take_away" value="take_away" required>
+                            <label class="btn btn-outline-success" for="ot_take_away">
+                                <i class="bi bi-bag-fill"></i> Take Away
+                            </label>
+
+                            <input type="radio" class="btn-check" name="order_type" id="ot_online" value="online" required>
+                            <label class="btn btn-outline-info" for="ot_online">
+                                <i class="bi bi-laptop"></i> Online
+                            </label>
+                        </div>
+                        <div class="form-text">Pilih cara Anda memesan saat mengalami kendala.</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label fw-semibold">Deskripsi Pengaduan <span class="text-danger">*</span></label>
                         <textarea name="complaint_text" rows="6" class="form-control" required
                                   placeholder="Jelaskan pengaduan Anda secara rinci..."

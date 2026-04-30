@@ -193,6 +193,34 @@ function kategori_badge(?string $codes): string
 }
 
 /**
+ * Label tipe pesanan (dine_in / take_away / online)
+ */
+function order_type_label(?string $code): string
+{
+    $map = [
+        'dine_in'   => 'Dine In',
+        'take_away' => 'Take Away',
+        'online'    => 'Online',
+    ];
+    return $map[$code] ?? '-';
+}
+
+/**
+ * Badge Bootstrap untuk tipe pesanan
+ */
+function order_type_badge(?string $code): string
+{
+    if (!$code) return '<span class="text-muted">-</span>';
+    $map = [
+        'dine_in'   => ['bg-primary',  'bi-shop',           'Dine In'],
+        'take_away' => ['bg-success',  'bi-bag-fill',       'Take Away'],
+        'online'    => ['bg-info',     'bi-laptop',         'Online'],
+    ];
+    $data = $map[$code] ?? ['bg-light text-dark', 'bi-question-circle', $code];
+    return '<span class="badge ' . $data[0] . '"><i class="bi ' . $data[1] . '"></i> ' . h($data[2]) . '</span>';
+}
+
+/**
  * Catat ke activity_logs
  */
 function log_activity(PDO $pdo, ?int $user_id, string $action, string $entity_type, ?string $entity_id, string $detail = ''): void

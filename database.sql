@@ -55,6 +55,7 @@ CREATE TABLE complaints (
   reporter_name VARCHAR(100),
   reporter_contact VARCHAR(100),
   is_anonymous TINYINT(1) DEFAULT 1,
+  order_type ENUM('dine_in','take_away','online') DEFAULT 'dine_in',
   complaint_text TEXT NOT NULL,
   status ENUM('new','in_progress','resolved','cancelled') DEFAULT 'new',
   -- Mendukung multi-label: 'PRD', 'PRD,HRG', dll

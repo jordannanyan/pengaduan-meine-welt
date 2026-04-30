@@ -87,6 +87,11 @@ if ($code !== '') {
                     </div>
 
                     <div class="mb-3">
+                        <div class="text-muted small">Tipe Pesanan:</div>
+                        <?= order_type_badge($complaint['order_type'] ?? null) ?>
+                    </div>
+
+                    <div class="mb-3">
                         <div class="text-muted small">Deskripsi:</div>
                         <div class="border rounded p-3 bg-light"><?= nl2br(h($complaint['complaint_text'])) ?></div>
                     </div>

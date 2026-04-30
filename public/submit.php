@@ -23,6 +23,11 @@ $complaint_text = trim($_POST['complaint_text'] ?? '');
 $is_anonymous   = isset($_POST['is_anonymous']) ? 1 : 0;
 $reporter_name  = $is_anonymous ? null : trim($_POST['reporter_name'] ?? '');
 $reporter_contact = $is_anonymous ? null : trim($_POST['reporter_contact'] ?? '');
+$order_type     = $_POST['order_type'] ?? '';
+if (!in_array($order_type, ['dine_in', 'take_away', 'online'], true)) {
+    flash_set('submit', 'Tipe pesanan tidak valid. Pilih Dine In, Take Away, atau Online.', 'danger');
+    redirect(BASE_URL . '/public/index.php');
+}
 
 if (strlen($complaint_text) < 10) {
     flash_set('submit', 'Deskripsi pengaduan terlalu pendek (minimal 10 karakter).', 'danger');
@@ -57,14 +62,15 @@ try {
 
     $stmt = $pdo->prepare(
         'INSERT INTO complaints
-            (ticket_code, reporter_name, reporter_contact, is_anonymous, complaint_text, status)
-         VALUES (?, ?, ?, ?, ?, "new")'
+            (ticket_code, reporter_name, reporter_contact, is_anonymous, order_type, complaint_text, status)
+         VALUES (?, ?, ?, ?, ?, ?, "new")'
     );
     $stmt->execute([
         $ticket_code,
         $reporter_name,
         $reporter_contact,
         $is_anonymous,
+        $order_type,
         $complaint_text,
     ]);
     $complaint_id = (int)$pdo->lastInsertId();
