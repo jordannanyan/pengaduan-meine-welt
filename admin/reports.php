@@ -57,7 +57,7 @@ $stmt = $pdo->prepare(
      GROUP BY sentiment"
 );
 $stmt->execute($params);
-$sent_count = ['positif'=>0,'negatif'=>0,'netral'=>0];
+$sent_count = ['positif'=>0,'negatif'=>0];
 foreach ($stmt->fetchAll() as $r) {
     $key = strtolower((string)$r['sentiment']);
     if (isset($sent_count[$key])) $sent_count[$key] = (int)$r['jml'];
@@ -72,10 +72,10 @@ $stmt = $pdo->prepare(
 );
 $stmt->execute($params);
 $cat_sent = [
-    'PLY' => ['positif'=>0,'negatif'=>0,'netral'=>0],
-    'PRD' => ['positif'=>0,'negatif'=>0,'netral'=>0],
-    'HRG' => ['positif'=>0,'negatif'=>0,'netral'=>0],
-    'SUI' => ['positif'=>0,'negatif'=>0,'netral'=>0],
+    'PLY' => ['positif'=>0,'negatif'=>0],
+    'PRD' => ['positif'=>0,'negatif'=>0],
+    'HRG' => ['positif'=>0,'negatif'=>0],
+    'SUI' => ['positif'=>0,'negatif'=>0],
 ];
 foreach ($stmt->fetchAll() as $r) {
     $sent_key = strtolower((string)$r['sentiment']);
@@ -241,8 +241,8 @@ $match_pct = $akurasi['total'] > 0
                 <h6 class="fw-bold mb-3"><i class="bi bi-emoji-smile-fill text-primary"></i> Distribusi Sentimen</h6>
                 <?php
                 $total_sent = array_sum($sent_count);
-                $sent_color = ['positif'=>'success','negatif'=>'danger','netral'=>'secondary'];
-                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill','netral'=>'bi-emoji-neutral-fill'];
+                $sent_color = ['positif'=>'success','negatif'=>'danger'];
+                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill'];
                 foreach ($sent_count as $key => $cnt):
                     $pct = $total_sent > 0 ? round($cnt / $total_sent * 100, 1) : 0;
                 ?>
@@ -275,7 +275,6 @@ $match_pct = $akurasi['total'] > 0
                                 <th>Kategori</th>
                                 <th class="text-success text-center"><i class="bi bi-emoji-smile-fill"></i> Positif</th>
                                 <th class="text-danger text-center"><i class="bi bi-emoji-frown-fill"></i> Negatif</th>
-                                <th class="text-secondary text-center"><i class="bi bi-emoji-neutral-fill"></i> Netral</th>
                                 <th class="text-center">Total</th>
                             </tr>
                         </thead>
@@ -286,7 +285,6 @@ $match_pct = $akurasi['total'] > 0
                                 <td><?= kategori_badge($code) ?></td>
                                 <td class="text-center"><?= $row['positif'] ?></td>
                                 <td class="text-center"><?= $row['negatif'] ?></td>
-                                <td class="text-center"><?= $row['netral'] ?></td>
                                 <td class="text-center"><b><?= $tot ?></b></td>
                             </tr>
                         <?php endforeach; ?>

@@ -20,7 +20,7 @@ if ($kategori !== '' && in_array($kategori, ['PLY','PRD','HRG','SUI'])) {
     $where[] = 'FIND_IN_SET(?, final_category_code) > 0';
     $params[] = $kategori;
 }
-if ($sentimen !== '' && in_array($sentimen, ['positif','negatif','netral'])) {
+if ($sentimen !== '' && in_array($sentimen, ['positif','negatif'])) {
     $where[] = 'sentiment = ?';
     $params[] = $sentimen;
 }
@@ -90,7 +90,6 @@ $rows = $stmt->fetchAll();
                     <option value="">-- Semua Sentimen --</option>
                     <option value="positif" <?= $sentimen==='positif'?'selected':'' ?>>Positif</option>
                     <option value="negatif" <?= $sentimen==='negatif'?'selected':'' ?>>Negatif</option>
-                    <option value="netral"  <?= $sentimen==='netral'?'selected':'' ?>>Netral</option>
                 </select>
             </div>
             <div class="col-md-2">

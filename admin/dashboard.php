@@ -36,7 +36,7 @@ $sent_rows = $pdo->query(
      GROUP BY sentiment"
 )->fetchAll();
 
-$sent_count = ['positif'=>0, 'negatif'=>0, 'netral'=>0];
+$sent_count = ['positif'=>0, 'negatif'=>0];
 foreach ($sent_rows as $r) {
     $key = strtolower((string)$r['sentiment']);
     if (isset($sent_count[$key])) $sent_count[$key] = (int)$r['jml'];
@@ -153,8 +153,8 @@ $recent = $pdo->query(
                 <h6 class="fw-bold mb-3"><i class="bi bi-emoji-smile-fill text-primary"></i> Distribusi Sentimen</h6>
                 <?php
                 $total_sent = array_sum($sent_count);
-                $sent_color = ['positif'=>'success','negatif'=>'danger','netral'=>'secondary'];
-                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill','netral'=>'bi-emoji-neutral-fill'];
+                $sent_color = ['positif'=>'success','negatif'=>'danger'];
+                $sent_icon  = ['positif'=>'bi-emoji-smile-fill','negatif'=>'bi-emoji-frown-fill'];
                 foreach ($sent_count as $key => $cnt):
                     $pct = $total_sent > 0 ? round($cnt / $total_sent * 100, 1) : 0;
                 ?>
