@@ -63,12 +63,15 @@ foreach ($stmt->fetchAll() as $r) {
     if (isset($sent_count[$key])) $sent_count[$key] = (int)$r['jml'];
 }
 
-// ---------- Sentimen per kategori (cross-tab) ----------
+// ---------- Sentimen per aspek (cross-tab, dari ABSA per-aspek) ----------
+// Sumber akurat: complaint_aspects (tiap aspek punya sentimen sendiri),
+// bukan sentimen keseluruhan yang disamaratakan ke semua kategori.
 $stmt = $pdo->prepare(
-    "SELECT final_category_code, sentiment FROM complaints
-     WHERE submitted_at BETWEEN ? AND ?
-       AND final_category_code IS NOT NULL AND final_category_code <> ''
-       AND sentiment IS NOT NULL AND sentiment <> ''"
+    "SELECT ca.aspect_code, ca.sentiment, COUNT(*) AS jml
+     FROM complaint_aspects ca
+     JOIN complaints c ON c.id = ca.complaint_id
+     WHERE c.submitted_at BETWEEN ? AND ?
+     GROUP BY ca.aspect_code, ca.sentiment"
 );
 $stmt->execute($params);
 $cat_sent = [
@@ -78,12 +81,10 @@ $cat_sent = [
     'SUI' => ['positif'=>0,'negatif'=>0],
 ];
 foreach ($stmt->fetchAll() as $r) {
+    $code = trim((string)$r['aspect_code']);
     $sent_key = strtolower((string)$r['sentiment']);
-    foreach (explode(',', $r['final_category_code']) as $c) {
-        $c = trim($c);
-        if (isset($cat_sent[$c]) && isset($cat_sent[$c][$sent_key])) {
-            $cat_sent[$c][$sent_key]++;
-        }
+    if (isset($cat_sent[$code][$sent_key])) {
+        $cat_sent[$code][$sent_key] += (int)$r['jml'];
     }
 }
 
@@ -267,7 +268,7 @@ $match_pct = $akurasi['total'] > 0
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h6 class="fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill text-primary"></i> Sentimen per Kategori</h6>
+                <h6 class="fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill text-primary"></i> Sentimen per Aspek (ABSA)</h6>
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">

@@ -71,6 +71,25 @@ CREATE TABLE complaints (
 ) ENGINE=InnoDB;
 
 -- ================================================================
+-- TABEL: complaint_aspects (hasil ABSA per-aspek)
+-- Satu pengaduan bisa punya beberapa pasangan (aspek, sentimen).
+-- Menjawab revisi: banyak aspek + sentimen per-aspek + negasi.
+-- ================================================================
+CREATE TABLE complaint_aspects (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  complaint_id BIGINT NOT NULL,
+  aspect_code VARCHAR(10) NOT NULL,            -- PLY / PRD / HRG / SUI
+  sentiment VARCHAR(10) NOT NULL,              -- positif / negatif
+  aspect_confidence DECIMAL(5,4),
+  sentiment_confidence DECIMAL(5,4),
+  source_segment VARCHAR(255),                 -- klausa asal (bukti BAB IV)
+  method VARCHAR(20),                          -- lexicon / ml / default
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_complaint_aspect (complaint_id, aspect_code)
+) ENGINE=InnoDB;
+
+-- ================================================================
 -- TABEL: attachments
 -- ================================================================
 CREATE TABLE attachments (

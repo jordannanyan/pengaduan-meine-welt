@@ -60,7 +60,11 @@ $classification = $data['classification'] ?? [];
                             (kategori <?= h(kategori_label($classification['primary_code'] ?? '')) ?>)
                         </div>
 
-                        <?php if (!empty($classification['sentimen'])): ?>
+                        <?php if (!empty($classification['aspek_sentimen'])): ?>
+                            <hr class="my-3">
+                            <div class="small text-muted mb-2">Sentimen per aspek:</div>
+                            <?= aspek_sentimen_render($classification['aspek_sentimen']) ?>
+                        <?php elseif (!empty($classification['sentimen'])): ?>
                             <hr class="my-3">
                             <div class="small text-muted mb-1">Sentimen terdeteksi:</div>
                             <?= sentimen_badge($classification['sentimen'], $classification['sentimen_confidence'] ?? null) ?>

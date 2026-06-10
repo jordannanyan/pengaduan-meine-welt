@@ -172,6 +172,35 @@ function sentimen_badge(?string $code, ?float $confidence = null): string
 }
 
 /**
+ * Render hasil ABSA per-aspek: daftar pasangan (aspek -> sentimen).
+ * $aspects: array dari classification['aspek_sentimen'] ATAU baris DB
+ *           complaint_aspects (key: kode/aspect_code, sentimen/sentiment, ...).
+ */
+function aspek_sentimen_render(array $aspects): string
+{
+    if (empty($aspects)) return '<span class="text-muted">-</span>';
+
+    $html = '<div class="d-flex flex-column gap-2">';
+    foreach ($aspects as $a) {
+        $code      = $a['kode'] ?? $a['aspect_code'] ?? '';
+        $sentimen  = $a['sentimen'] ?? $a['sentiment'] ?? '';
+        $sconf     = $a['sentimen_confidence'] ?? $a['sentiment_confidence'] ?? null;
+        $segment   = $a['segmen'] ?? $a['source_segment'] ?? '';
+
+        $html .= '<div class="d-flex align-items-center gap-2 flex-wrap">'
+            . kategori_badge($code)
+            . '<i class="bi bi-arrow-right-short text-muted"></i>'
+            . sentimen_badge($sentimen, $sconf !== null ? (float)$sconf : null);
+        if ($segment !== '') {
+            $html .= '<span class="small text-muted fst-italic">“' . h($segment) . '”</span>';
+        }
+        $html .= '</div>';
+    }
+    $html .= '</div>';
+    return $html;
+}
+
+/**
  * Badge Bootstrap untuk kategori
  */
 function kategori_badge(?string $codes): string

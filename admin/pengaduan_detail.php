@@ -110,6 +110,10 @@ $stmt = $pdo->prepare('SELECT * FROM attachments WHERE complaint_id = ? ORDER BY
 $stmt->execute([$cid]);
 $attachments = $stmt->fetchAll();
 
+$stmt = $pdo->prepare('SELECT * FROM complaint_aspects WHERE complaint_id = ? ORDER BY aspect_confidence DESC');
+$stmt->execute([$cid]);
+$aspects = $stmt->fetchAll();
+
 $final_codes = array_filter(array_map('trim', explode(',', $complaint['final_category_code'] ?? '')));
 ?>
 
@@ -178,10 +182,18 @@ $final_codes = array_filter(array_map('trim', explode(',', $complaint['final_cat
 
                 <div class="row">
                     <div class="col-md-6 mb-2">
-                        <div class="text-muted small">Sentimen:</div>
+                        <div class="text-muted small">Sentimen keseluruhan:</div>
                         <?= sentimen_badge($complaint['sentiment'] ?? null, isset($complaint['sentiment_confidence']) ? (float)$complaint['sentiment_confidence'] : null) ?>
                     </div>
                 </div>
+
+                <?php if ($aspects): ?>
+                    <hr>
+                    <div class="text-muted small mb-2">
+                        <i class="bi bi-diagram-3-fill text-primary"></i> Analisis Sentimen per Aspek:
+                    </div>
+                    <?= aspek_sentimen_render($aspects) ?>
+                <?php endif; ?>
 
                 <?php if ($attachments): ?>
                     <hr>

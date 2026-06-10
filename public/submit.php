@@ -152,6 +152,33 @@ try {
             $predicted_codes,  // default: final = predicted (bisa di-override petugas/admin)
             $complaint_id
         ]);
+
+        // Simpan hasil per-aspek (ABSA) ke complaint_aspects
+        if (!empty($classification['aspek_sentimen']) && is_array($classification['aspek_sentimen'])) {
+            $aspStmt = $pdo->prepare(
+                'INSERT INTO complaint_aspects
+                    (complaint_id, aspect_code, sentiment, aspect_confidence,
+                     sentiment_confidence, source_segment, method)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    sentiment = VALUES(sentiment),
+                    aspect_confidence = VALUES(aspect_confidence),
+                    sentiment_confidence = VALUES(sentiment_confidence),
+                    source_segment = VALUES(source_segment),
+                    method = VALUES(method)'
+            );
+            foreach ($classification['aspek_sentimen'] as $asp) {
+                $aspStmt->execute([
+                    $complaint_id,
+                    $asp['kode'] ?? null,
+                    $asp['sentimen'] ?? null,
+                    $asp['aspek_confidence'] ?? null,
+                    $asp['sentimen_confidence'] ?? null,
+                    mb_substr($asp['segmen'] ?? '', 0, 255),
+                    $asp['metode'] ?? null,
+                ]);
+            }
+        }
     } else {
         // Tetap simpan pengaduan walau klasifikasi gagal
         // Petugas bisa set kategori manual nanti
